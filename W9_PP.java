@@ -1,64 +1,58 @@
 import java.util.Scanner;
 
-interface BusUser {
-    double TRANSPORT_FEE = 12000.0;
+interface NightService {
+    double NIGHT_RATE = 0.20;
 }
 
-abstract class Student {
-    String name;
+abstract class Cab {
+    double km;
 
-    Student(String name) {
-        this.name = name;
+    Cab(double km) {
+        this.km = km;
     }
 
-    abstract double getTuition();
+    abstract double getRate();
 
-    double getExtraFee() {
-        return 0.0;
-    }
-
-    double getFee() {
-        double fee = getTuition() + getExtraFee();
-
-        if (this instanceof BusUser) {
-            fee += BusUser.TRANSPORT_FEE;
-        }
-
-        return fee;
+    double getFare() {
+        return Math.max(100.0, km * getRate());
     }
 }
 
-class DayScholar extends Student implements BusUser {
-    DayScholar(String name) {
-        super(name);
+class Mini extends Cab {
+    Mini(double km) {
+        super(km);
     }
 
-    double getTuition() {
-        return 40000.0;
-    }
-}
-
-class Hosteller extends Student {
-    Hosteller(String name) {
-        super(name);
-    }
-
-    double getTuition() {
-        return 40000.0;
-    }
-
-    double getExtraFee() {
-        return 60000.0;
+    double getRate() {
+        return 10.0;
     }
 }
 
-class Scholar extends Student implements BusUser {
-    Scholar(String name) {
-        super(name);
+class Sedan extends Cab implements NightService {
+    Sedan(double km) {
+        super(km);
     }
 
-    double getTuition() {
-        return 20000.0;
+    double getRate() {
+        return 14.0;
+    }
+
+    double getNightFare() {
+        return getFare() * (1 + NIGHT_RATE);
+    }
+}
+
+class SUV extends Cab implements NightService {
+    SUV(double km) {
+        super(km);
+    }
+
+    double getRate() {
+        return 18.0;
+    }
+
+    double getNightFare() {
+        return getFare() * (1 + NIGHT_RATE);
     }
 }
 
@@ -70,30 +64,41 @@ public class W9_PP {
 
         for (int i = 0; i < n; i++) {
             String type = sc.next().toUpperCase();
-            String name = sc.next();
+            double km = sc.nextDouble();
+            String time = sc.next().toUpperCase();
 
-            Student s;
+            Cab cab;
 
             switch (type) {
-                case "DAY_SCHOLAR":
-                    s = new DayScholar(name);
+                case "MINI":
+                    cab = new Mini(km);
                     break;
-                case "HOSTELLER":
-                    s = new Hosteller(name);
+                case "SEDAN":
+                    cab = new Sedan(km);
                     break;
-                case "SCHOLAR":
-                    s = new Scholar(name);
+                case "SUV":
+                    cab = new SUV(km);
                     break;
                 default:
                     continue;
             }
 
-            double fee = s.getFee();
-            System.out.printf("%s: %.2f%n", name, fee);
-            total += fee;
+            if (time.equals("NIGHT") && !(cab instanceof NightService)) {
+                System.out.println(type + ": night service not available");
+                continue;
+            }
+
+            double fare = cab.getFare();
+
+            if (time.equals("NIGHT")) {
+                fare = fare * 1.20;
+            }
+
+            System.out.printf("%s: %.2f%n", type, fare);
+            total += fare;
         }
 
-        System.out.printf("Total Collected: %.2f%n", total);
+        System.out.printf("Total: %.2f%n", total);
         sc.close();
     }
 }
