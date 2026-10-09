@@ -1,64 +1,64 @@
 import java.util.Scanner;
 
-abstract class Parcel {
-    double weight;
-    double value;
+interface BusUser {
+    double TRANSPORT_FEE = 12000.0;
+}
 
-    Parcel(double weight, double value) {
-        this.weight = weight;
-        this.value = value;
+abstract class Student {
+    String name;
+
+    Student(String name) {
+        this.name = name;
     }
 
-    abstract double getCharge();
+    abstract double getTuition();
 
-    double getInsurance() {
+    double getExtraFee() {
         return 0.0;
     }
 
-    double getTotal() {
-        return getCharge() + getInsurance();
+    double getFee() {
+        double fee = getTuition() + getExtraFee();
+
+        if (this instanceof BusUser) {
+            fee += BusUser.TRANSPORT_FEE;
+        }
+
+        return fee;
     }
 }
 
-interface Insurable {
-    double getInsurance();
-}
-
-class Standard extends Parcel {
-    Standard(double weight, double value) {
-        super(weight, value);
+class DayScholar extends Student implements BusUser {
+    DayScholar(String name) {
+        super(name);
     }
 
-    double getCharge() {
-        return 40 + 10 * weight;
+    double getTuition() {
+        return 40000.0;
     }
 }
 
-class Express extends Parcel implements Insurable {
-    Express(double weight, double value) {
-        super(weight, value);
+class Hosteller extends Student {
+    Hosteller(String name) {
+        super(name);
     }
 
-    public double getCharge() {
-        return 80 + 15 * weight;
+    double getTuition() {
+        return 40000.0;
     }
 
-    public double getInsurance() {
-        return value * 0.02;
+    double getExtraFee() {
+        return 60000.0;
     }
 }
 
-class Fragile extends Parcel implements Insurable {
-    Fragile(double weight, double value) {
-        super(weight, value);
+class Scholar extends Student implements BusUser {
+    Scholar(String name) {
+        super(name);
     }
 
-    double getCharge() {
-        return 40 + 10 * weight + 50;
-    }
-
-    public double getInsurance() {
-        return value * 0.02;
+    double getTuition() {
+        return 20000.0;
     }
 }
 
@@ -66,42 +66,34 @@ public class W9_PP {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
-        double grandTotal = 0;
+        double total = 0;
 
         for (int i = 0; i < n; i++) {
             String type = sc.next().toUpperCase();
-            double weight = sc.nextDouble();
-            double value = sc.nextDouble();
+            String name = sc.next();
 
-            Parcel p;
+            Student s;
 
             switch (type) {
-                case "STANDARD":
-                    p = new Standard(weight, value);
+                case "DAY_SCHOLAR":
+                    s = new DayScholar(name);
                     break;
-                case "EXPRESS":
-                    p = new Express(weight, value);
+                case "HOSTELLER":
+                    s = new Hosteller(name);
                     break;
-                case "FRAGILE":
-                    p = new Fragile(weight, value);
+                case "SCHOLAR":
+                    s = new Scholar(name);
                     break;
                 default:
                     continue;
             }
 
-            double charge = p.getCharge();
-            double insurance = p.getInsurance();
-            double total = p.getTotal();
-
-            System.out.printf(
-                "%s: Charge=%.2f Insurance=%.2f Total=%.2f%n",
-                type, charge, insurance, total
-            );
-
-            grandTotal += total;
+            double fee = s.getFee();
+            System.out.printf("%s: %.2f%n", name, fee);
+            total += fee;
         }
 
-        System.out.printf("Grand Total: %.2f%n", grandTotal);
+        System.out.printf("Total Collected: %.2f%n", total);
         sc.close();
     }
 }
