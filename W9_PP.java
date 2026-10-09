@@ -1,47 +1,64 @@
 import java.util.Scanner;
 
-abstract class Ticket {
-    static final double FEE = 20.0;
-    int count;
+abstract class Parcel {
+    double weight;
+    double value;
 
-    Ticket(int count) {
-        this.count = count;
+    Parcel(double weight, double value) {
+        this.weight = weight;
+        this.value = value;
     }
 
-    abstract double getPrice();
+    abstract double getCharge();
 
-    double getAmount() {
-        return (getPrice() + FEE) * count;
-    }
-}
-
-class Regular extends Ticket {
-    Regular(int count) {
-        super(count);
+    double getInsurance() {
+        return 0.0;
     }
 
-    double getPrice() {
-        return 150.0;
+    double getTotal() {
+        return getCharge() + getInsurance();
     }
 }
 
-class Premium extends Ticket {
-    Premium(int count) {
-        super(count);
+interface Insurable {
+    double getInsurance();
+}
+
+class Standard extends Parcel {
+    Standard(double weight, double value) {
+        super(weight, value);
     }
 
-    double getPrice() {
-        return 250.0;
+    double getCharge() {
+        return 40 + 10 * weight;
     }
 }
 
-class Recliner extends Ticket {
-    Recliner(int count) {
-        super(count);
+class Express extends Parcel implements Insurable {
+    Express(double weight, double value) {
+        super(weight, value);
     }
 
-    double getPrice() {
-        return 400.0;
+    public double getCharge() {
+        return 80 + 15 * weight;
+    }
+
+    public double getInsurance() {
+        return value * 0.02;
+    }
+}
+
+class Fragile extends Parcel implements Insurable {
+    Fragile(double weight, double value) {
+        super(weight, value);
+    }
+
+    double getCharge() {
+        return 40 + 10 * weight + 50;
+    }
+
+    public double getInsurance() {
+        return value * 0.02;
     }
 }
 
@@ -49,33 +66,42 @@ public class W9_PP {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
-        double total = 0;
+        double grandTotal = 0;
 
         for (int i = 0; i < n; i++) {
-            String seat = sc.next().toUpperCase();
-            int count = sc.nextInt();
-            Ticket t;
+            String type = sc.next().toUpperCase();
+            double weight = sc.nextDouble();
+            double value = sc.nextDouble();
 
-            switch (seat) {
-                case "REGULAR":
-                    t = new Regular(count);
+            Parcel p;
+
+            switch (type) {
+                case "STANDARD":
+                    p = new Standard(weight, value);
                     break;
-                case "PREMIUM":
-                    t = new Premium(count);
+                case "EXPRESS":
+                    p = new Express(weight, value);
                     break;
-                case "RECLINER":
-                    t = new Recliner(count);
+                case "FRAGILE":
+                    p = new Fragile(weight, value);
                     break;
                 default:
                     continue;
             }
 
-            double amount = t.getAmount();
-            System.out.printf("%s: %.2f%n", seat, amount);
-            total += amount;
+            double charge = p.getCharge();
+            double insurance = p.getInsurance();
+            double total = p.getTotal();
+
+            System.out.printf(
+                "%s: Charge=%.2f Insurance=%.2f Total=%.2f%n",
+                type, charge, insurance, total
+            );
+
+            grandTotal += total;
         }
 
-        System.out.printf("Total: %.2f%n", total);
+        System.out.printf("Grand Total: %.2f%n", grandTotal);
         sc.close();
     }
 }
