@@ -1,58 +1,72 @@
 import java.util.Scanner;
 
-interface NightService {
-    double NIGHT_RATE = 0.20;
+interface SaverMode {
+    double SAVER_FACTOR = 0.75;
 }
 
-abstract class Cab {
-    double km;
+abstract class Appliance {
+    double hours;
 
-    Cab(double km) {
-        this.km = km;
+    Appliance(double hours) {
+        this.hours = hours;
     }
 
-    abstract double getRate();
+    abstract double getPower();
 
-    double getFare() {
-        return Math.max(100.0, km * getRate());
-    }
-}
-
-class Mini extends Cab {
-    Mini(double km) {
-        super(km);
+    double getUnits() {
+        return getPower() * hours / 1000.0;
     }
 
-    double getRate() {
-        return 10.0;
+    double getCost() {
+        return getUnits() * 8.0;
     }
 }
 
-class Sedan extends Cab implements NightService {
-    Sedan(double km) {
-        super(km);
+class Fridge extends Appliance {
+    Fridge(double hours) {
+        super(hours);
     }
 
-    double getRate() {
-        return 14.0;
-    }
-
-    double getNightFare() {
-        return getFare() * (1 + NIGHT_RATE);
+    double getPower() {
+        return 150.0;
     }
 }
 
-class SUV extends Cab implements NightService {
-    SUV(double km) {
-        super(km);
+class AC extends Appliance implements SaverMode {
+    AC(double hours) {
+        super(hours);
     }
 
-    double getRate() {
-        return 18.0;
+    double getPower() {
+        return 1500.0;
     }
 
-    double getNightFare() {
-        return getFare() * (1 + NIGHT_RATE);
+    double getSaverUnits() {
+        return getUnits() * SAVER_FACTOR;
+    }
+}
+
+class TV extends Appliance {
+    TV(double hours) {
+        super(hours);
+    }
+
+    double getPower() {
+        return 100.0;
+    }
+}
+
+class Washer extends Appliance implements SaverMode {
+    Washer(double hours) {
+        super(hours);
+    }
+
+    double getPower() {
+        return 500.0;
+    }
+
+    double getSaverUnits() {
+        return getUnits() * SAVER_FACTOR;
     }
 }
 
@@ -60,45 +74,60 @@ public class W9_PP {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
-        double total = 0;
+        double totalCost = 0;
 
         for (int i = 0; i < n; i++) {
             String type = sc.next().toUpperCase();
-            double km = sc.nextDouble();
-            String time = sc.next().toUpperCase();
+            double hours = sc.nextDouble();
 
-            Cab cab;
+            boolean saver = false;
+
+            if (sc.hasNextLine()) {
+                String remaining = sc.nextLine().trim();
+                saver = remaining.equalsIgnoreCase("SAVER");
+            }
+
+            Appliance a;
 
             switch (type) {
-                case "MINI":
-                    cab = new Mini(km);
+                case "FRIDGE":
+                    a = new Fridge(hours);
                     break;
-                case "SEDAN":
-                    cab = new Sedan(km);
+                case "AC":
+                    a = new AC(hours);
                     break;
-                case "SUV":
-                    cab = new SUV(km);
+                case "TV":
+                    a = new TV(hours);
+                    break;
+                case "WASHER":
+                    a = new Washer(hours);
                     break;
                 default:
                     continue;
             }
 
-            if (time.equals("NIGHT") && !(cab instanceof NightService)) {
-                System.out.println(type + ": night service not available");
+            if (saver && !(a instanceof SaverMode)) {
+                System.out.println(type + ": saver mode not supported");
                 continue;
             }
 
-            double fare = cab.getFare();
+            double units = a.getUnits();
 
-            if (time.equals("NIGHT")) {
-                fare = fare * 1.20;
+            if (saver) {
+                units *= 0.75;
             }
 
-            System.out.printf("%s: %.2f%n", type, fare);
-            total += fare;
+            double cost = units * 8.0;
+
+            System.out.printf(
+                "%s: Units=%.2f Cost=%.2f%n",
+                type, units, cost
+            );
+
+            totalCost += cost;
         }
 
-        System.out.printf("Total: %.2f%n", total);
+        System.out.printf("Total Cost: %.2f%n", totalCost);
         sc.close();
     }
 }
